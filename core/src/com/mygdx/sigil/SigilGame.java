@@ -12,6 +12,15 @@ import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Iterator;
 
+//TODO
+//These are the general next steps we need in the game:
+//Add more types of blocks
+//Create runes as gameobjects
+//Allow runes to be added to blocks
+//Give blocks properties and express them in terms of energy
+//Create pop up menus for choosing, crafting, and adding (engraving?) runes into blocks
+
+
 public class SigilGame extends ApplicationAdapter {
 	private SpriteBatch batch;
 
