@@ -24,37 +24,39 @@ import java.util.Iterator;
 public class SigilGame extends ApplicationAdapter {
 	private SpriteBatch batch;
 
-	private Texture smileyImg, blockImg;
+	private Texture smileyImg, blockImg, uleImg;
 	public static OrthographicCamera camera;
+	public static float globalScale = 1.3f;
 
 	GameObject smiley, block;
-
-	final int WIDTH = 768;
-	final int HEIGHT = 480;
 
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
 
+		uleImg = new Texture("runes/64w/ule.png");
+
 		camera = new OrthographicCamera();
-		camera.setToOrtho(false, WIDTH, HEIGHT);
-		for (int i = 0; i < WIDTH/GrassBlock.grassBlockImage.getWidth() + 1; i ++) {
+		camera.setToOrtho(false, Gdx.graphics.getWidth() / globalScale,
+				Gdx.graphics.getHeight() / globalScale);
+		camera.position.x = Gdx.graphics.getWidth()/2;
+		camera.position.y = Gdx.graphics.getHeight()/2;
+
+		for (int i = 0; i < Gdx.graphics.getWidth()/GrassBlock.grassBlockImage.getWidth() + 1; i ++) {
 			GameObject.gameObjects.add(new GrassBlock(i * GrassBlock.grassBlockImage.getWidth(), 0));
 		}
-		GameObject.gameObjects.add(new StoneBlock(400, 400));
+		StoneBlock stoneBlock = new StoneBlock(400, 400);
+		GameObject.gameObjects.add(stoneBlock);
+
+		Rune ule = new Rune(uleImg, 200, 200);
+		ule.hasHost = true;
+		ule.hostObject = stoneBlock;
+		GameObject.gameObjects.add(ule);
 
 	}
 
 	@Override
 	public void render () {
-		/*
-		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-			smiley.setX(smiley.getX() - (200 * Gdx.graphics.getDeltaTime()));
-		}
-		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-			smiley.setX(smiley.getX() + (200 * Gdx.graphics.getDeltaTime()));
-		}*/
-
 		if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
 			GameObject.gameObjects.add(new StoneBlock(400, 400));
 		}
@@ -62,6 +64,7 @@ public class SigilGame extends ApplicationAdapter {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 		for (GameObject o: GameObject.gameObjects) {
 			o.render(batch);
