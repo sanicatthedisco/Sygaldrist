@@ -1,3 +1,7 @@
+## JM Added
+local.properties
+/android/local.properties
+
 ## Java
 
 *.class
