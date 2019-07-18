@@ -12,5 +12,6 @@ public class Block extends GameObject {
         super(img, x, y, isKinetic);
 
         gridSize = 3;
+        attachedRunes = new Array<Rune>();
     }
 }

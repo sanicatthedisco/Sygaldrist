@@ -11,13 +11,13 @@ public class Rune extends GameObject {
     Texture smallImage, regularImage;
 
 
-    public Rune (Texture img, float x, float y) {
+    public Rune (Texture img, Texture smallImg, float x, float y) {
         super(img, x, y, false);
 
         hasHost = false;
         gridCoords = new Vector2(0, 0);
 
-        smallImage = new Texture("runes/20w/ule_small.png");
+        smallImage = smallImg;
         regularImage = getImage();
     }
 
@@ -38,6 +38,33 @@ public class Rune extends GameObject {
         }
 
         doRuneAbility();
+    }
+
+    public Rune attachTo(Block block, Vector2 position) {
+        for (int i = 0; i < block.attachedRunes.size; i ++) {
+            if (block.attachedRunes.get(i).gridCoords.equals(position)) {
+                System.out.println("You cant put a rune on top of another rune dumbfuck");
+                return this;
+            }
+        }
+
+        block.attachedRunes.add(this);
+        hasHost = true;
+        hostObject = block;
+        gridCoords.set(position);
+        scale.set(0.9f, 0.9f);
+        setImage(smallImage);
+        return this;
+    }
+
+    public Rune detach() {
+        if (!hasHost) {
+            return this;
+        }
+        hostObject.attachedRunes.removeValue(this, true);
+        scale.set(1, 1);
+        setImage(regularImage);
+        return this;
     }
 
     public void doRuneAbility() {};
