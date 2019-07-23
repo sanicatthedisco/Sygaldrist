@@ -3,19 +3,21 @@ package com.mygdx.sigil;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 
-public class GameObject {
+public class GameObject extends Actor {
     private Texture image;
-    private Rectangle rect;
+    public Rectangle rect;
     private boolean isKinetic;
     private Array<GameObject> collisions;
 
     boolean isGrounded;
-    boolean isDraggable, beingDragged;
+    public boolean isDraggable, beingDragged;
     public boolean canCollide;
     public static boolean isDragOccuring;
 
@@ -27,6 +29,9 @@ public class GameObject {
     Vector2 scale;
 
     static Array<GameObject> gameObjects = new Array<GameObject>();
+
+    public boolean isCollidable;
+    public boolean hidden;
 
     //Material properties
     //0 is right, 3pi/2 is down
@@ -40,7 +45,7 @@ public class GameObject {
     //World constants
     static final float STP = 273;
 
-    static float g = 0.3f;
+    static float g = 0.5f;
     static float airTemp = STP + 25;
 
     public GameObject(Texture img, float x, float y, boolean isKinetic) {
@@ -60,15 +65,19 @@ public class GameObject {
 
         collisions = new Array<GameObject>();
         scale = new Vector2(1, 1);
+
+        isCollidable = true;
     }
 
     public void render(SpriteBatch batch) {
         //batch.draw(image, rect.x-(rect.width/2), rect.y-(rect.height/2));
         update();
 
-        batch.draw(image, rect.x, rect.y, image.getWidth() * scale.x,
-                image.getHeight() * scale.y);
+        if (!hidden) {
+            batch.draw(image, rect.x, rect.y, image.getWidth() * scale.x, image.getHeight() * scale.y);
+        }
     }
+    public void shapeRender(ShapeRenderer sr) {};
 
     public void update() {
         forceVectors.clear();
@@ -93,8 +102,10 @@ public class GameObject {
             doPixelPerfectCollision();
 
         }
-        drag();
+        drag(false);
+        additionalUpdate();
     }
+    public void additionalUpdate() {};
 
     public Vector2 sumVectorArray(Array<Vector2> vectorArray) {
         Vector2 vectorSum = new Vector2(0, 0);
@@ -153,15 +164,22 @@ public class GameObject {
         }
     }
 
-    public void drag() {
+    public void drag(boolean startDrag) {
         if (Gdx.input.isTouched() && isDraggable && (beingDragged || !isDragOccuring)) {
             touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             SigilGame.camera.unproject(touchPos);
 
-            if (rect.contains(new Vector2(touchPos.x, touchPos.y))) {
-                if (!beingDragged) originalLocation = new Vector2(getX(), getY());
-                dragOffset = new Vector2(touchPos.x - getX(), touchPos.y - getY());
+            if ((rect.contains(new Vector2(touchPos.x, touchPos.y))) || startDrag) {
+                if (!beingDragged) {
+                    originalLocation = new Vector2(getX(), getY());
+                    if (startDrag) {
+                        dragOffset = new Vector2(0, 0);
+                    } else {
+                        dragOffset = new Vector2(touchPos.x - getX(), touchPos.y - getY());
+                    }
+                }
+
                 beingDragged = true;
                 isDragOccuring = true;
             }
@@ -170,7 +188,7 @@ public class GameObject {
             }
         } else {
             if (beingDragged) {
-                if (isColliding()) {
+                if (isColliding() && isCollidable) {
                     setLocation(originalLocation.x, originalLocation.y);
                 }
 
@@ -178,6 +196,14 @@ public class GameObject {
                 isDragOccuring = false;
             }
         }
+    }
+
+    public boolean containsMouse() {
+        touchPos = new Vector3();
+        touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        SigilGame.camera.unproject(touchPos);
+
+        return rect.contains(new Vector2(touchPos.x, touchPos.y));
     }
 
     private void temperatureDecay() {
@@ -192,11 +218,22 @@ public class GameObject {
         collisions.clear();
         for (int i = 0; i < gameObjects.size; i ++) {
             if (this.rect.overlaps(gameObjects.get(i).getRect()) && gameObjects.get(i) != this &&
-                    gameObjects.get(i).getClass() != Rune.class) {
+                    gameObjects.get(i).isCollidable && !gameObjects.get(i).hidden) {
                 collisions.add(gameObjects.get(i));
             }
         }
         return collisions;
+    }
+
+    public Array<GameObject> getCollisionsWithClass(Class cls) {
+        Array<GameObject> collisionsWithClass = new Array<GameObject>();
+        for (int i = 0; i < gameObjects.size; i ++) {
+            if (this.rect.overlaps(gameObjects.get(i).getRect()) && gameObjects.get(i) != this &&
+                    gameObjects.get(i).getClass() == cls && !gameObjects.get(i).hidden) {
+                collisionsWithClass.add(gameObjects.get(i));
+            }
+        }
+        return collisionsWithClass;
     }
 
     public boolean isColliding() {
@@ -246,6 +283,9 @@ public class GameObject {
     public Rectangle getRect() {
         return this.rect;
     }
+    public void setRect(Rectangle r) {
+        this.rect = r;
+    }
     public Texture getImage() {
         return this.image;
     }
@@ -257,6 +297,12 @@ public class GameObject {
     }
     public float getScaledHeight() {
         return this.image.getHeight() * scale.y;
+    }
+    public void hide() {
+        hidden = true;
+    }
+    public void show() {
+        hidden = false;
     }
 
 

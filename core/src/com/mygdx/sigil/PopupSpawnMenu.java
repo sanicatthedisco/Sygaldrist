@@ -1,9 +1,12 @@
 package com.mygdx.sigil;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -19,6 +22,7 @@ public class PopupSpawnMenu {
     static Array<String> runeImgPaths = new Array<String>();
 
     static final String PATH_TO_RUNE_IMAGES = "runes/64w/";
+    static final String PATH_TO_SMALL_RUNE_IMAGES = "runes/20w/";
     static final String IMAGE_EXTENSION = ".png";
     static float elementSpacing = 30;
 
@@ -44,9 +48,16 @@ public class PopupSpawnMenu {
         Image temp;
         for (int i = 0; i < runeImgs.size; i ++) {
             temp = new Image(runeImgs.get(i));
+            final String runeType = runeImgPaths.get(i);
             temp.addListener(new DragListener() {
                 public void dragStart(InputEvent event, float x, float y, int pointer) {
-                    //Rune draggedRune = new Rune(event.getListenerActor())
+                    Texture runeImg = new Texture(PATH_TO_RUNE_IMAGES + runeType + IMAGE_EXTENSION);
+                    Texture runeImg_s = new Texture(PATH_TO_SMALL_RUNE_IMAGES + runeType + IMAGE_EXTENSION);
+
+                    Rune newRune = new Rune(runeImg, runeImg_s, 0, 0);
+                    newRune.drag(true);
+                    //System.out.println(newRune.beingDragged);
+                    GameObject.gameObjects.add(newRune);
                 }
             });
             runeIcons.add(temp);

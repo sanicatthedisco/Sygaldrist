@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -29,7 +30,7 @@ import java.util.Iterator;
 public class SigilGame extends ApplicationAdapter {
 	private SpriteBatch batch;
 
-	private Texture smileyImg, blockImg, uleImg, uleImg_s, dochImg;
+	static Texture smileyImg, blockImg, uleImg, uleImg_s, dochImg;
 	public static OrthographicCamera camera;
 	public static float globalScale = 1.3f;
 
@@ -41,11 +42,14 @@ public class SigilGame extends ApplicationAdapter {
 
 	GameObject smiley, block;
 
+	ShapeRenderer shapeRenderer;
+
 	@Override
 	public void create () {
 		uleImg = new Texture("runes/64w/ule.png");
 		dochImg = new Texture("runes/64w/doch.png");
 		uleImg_s = new Texture("runes/20w/ule.png");
+		smileyImg = new Texture("smiley.png");
 
 		stage = new Stage();
 		Gdx.input.setInputProcessor(stage);
@@ -61,6 +65,7 @@ public class SigilGame extends ApplicationAdapter {
 
 
 
+		shapeRenderer = new ShapeRenderer();
 		batch = new SpriteBatch();
 
 		camera = new OrthographicCamera();
@@ -73,11 +78,15 @@ public class SigilGame extends ApplicationAdapter {
 			GameObject.gameObjects.add(new GrassBlock(i * GrassBlock.grassBlockImage.getWidth(), 0));
 		}
 		StoneBlock stoneBlock = new StoneBlock(400, 400);
+		stoneBlock.canBeInscribed = true;
 		GameObject.gameObjects.add(stoneBlock);
-
+		/*
 		GameObject.gameObjects.add((new Rune(uleImg, uleImg_s, 0, 0).attachTo(stoneBlock, new Vector2(0, 0))));
 		GameObject.gameObjects.add((new Rune(uleImg, uleImg_s, 0, 0).attachTo(stoneBlock, new Vector2(1, 0))));
 		GameObject.gameObjects.add((new Rune(uleImg, uleImg_s, 0, 0).attachTo(stoneBlock, new Vector2(-1, -1))));
+
+		 */
+
 	}
 
 	@Override
@@ -88,18 +97,31 @@ public class SigilGame extends ApplicationAdapter {
 			GameObject.gameObjects.add(new StoneBlock(400, 400));
 		}
 
-		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
+		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 
 		stage.act(delta);
 		stage.draw();
-
 		batch.setProjectionMatrix(camera.combined);
+		shapeRenderer.setProjectionMatrix(camera.combined);
+
+		//not a great solution, but allows runes to be dragged first.
+		for (GameObject o: GameObject.gameObjects) {
+			if (o.getClass() == Rune.class) {
+				o.drag(false);
+			}
+		}
+
 		batch.begin();
 		for (GameObject o: GameObject.gameObjects) {
 			o.render(batch);
 		}
 		batch.end();
+
+		for (GameObject o: GameObject.gameObjects) {
+			o.shapeRender(shapeRenderer);
+		}
 	}
 
 	public void resize (int width, int height) {
@@ -109,6 +131,7 @@ public class SigilGame extends ApplicationAdapter {
 	@Override
 	public void dispose () {
 		batch.dispose();
+		shapeRenderer.dispose();
 		smileyImg.dispose();
 	}
 }
