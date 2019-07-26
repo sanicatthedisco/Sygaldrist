@@ -19,12 +19,20 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import java.util.Iterator;
 
 //TODO
-//These are the general next steps we need in the game:
-//Add more types of blocks
-//Create runes as gameobjects
-//Allow runes to be added to blocks
+//Real shit:
+
+//Be able to rotate runes
+//Give runes inputs and outputs based on orientation
+//Menu with tools and shortcuts for rotating runes and opening menus
+
 //Give blocks properties and express them in terms of energy
-//Create pop up menus for choosing, crafting, and adding (engraving?) runes into blocks
+
+//Other shit:
+
+//Add more types of blocks
+//Animations/responses from buttons and other UI elements
+//Clean up graphics and resolution (no more shitty global scale)
+//Main menu
 
 
 public class SigilGame extends ApplicationAdapter {
@@ -35,7 +43,7 @@ public class SigilGame extends ApplicationAdapter {
 	public static float globalScale = 1.3f;
 
 	private Stage stage;
-	private Table rootTable, popupMenuTable;
+	private Table rootTable, popupMenuTable, popupToolTable;
 	private Stack stack;
 	private Image uleIcon, dochIcon;
 	PopupSpawnMenu popupSpawnMenu;
@@ -62,7 +70,11 @@ public class SigilGame extends ApplicationAdapter {
 		popupMenuTable = popupSpawnMenu.getRoot();
 		rootTable.add(popupMenuTable).pad(10);
 		rootTable.right().top();
+		rootTable.row();
 
+		popupToolTable = new Table();
+		popupToolTable.add(new Image(new Texture("smiley.png")));
+		rootTable.add(popupToolTable);
 
 
 		shapeRenderer = new ShapeRenderer();
